@@ -1,5 +1,6 @@
 package com.beyzaakyol.todolist
 
+import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.time.LocalDate
@@ -9,6 +10,8 @@ import java.util.*
 class TaskViewModel: ViewModel()
 {
     var taskItems = MutableLiveData<MutableList<TaskItem>>()
+
+    var dueTime: LocalTime? = null
 
     init {
         taskItems.value = mutableListOf()
@@ -36,7 +39,9 @@ class TaskViewModel: ViewModel()
         val list = taskItems.value
         val task =list!!.find {it.id == taskItem.id}!!
         if (task.completedDate == null)
-            task.completedDate = LocalDate.now()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                task.completedDate = LocalDate.now()
+            }
         taskItems.postValue(list)
 
     }
