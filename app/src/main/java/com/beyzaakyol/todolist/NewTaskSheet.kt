@@ -23,14 +23,15 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
         super.onViewCreated(view, savedInstanceState)
         val activity = requireActivity()
 
+
         if (taskItem != null)
         {
             binding.taskTitle.text = "Edit Task"
             val editable = Editable.Factory.getInstance()
             binding.name.text = editable.newEditable(taskItem!!.name)
             binding.desc.text = editable.newEditable(taskItem!!.desc)
-            if(taskItem!!.dueTime != null){
-                dueTime = taskItem!!.dueTime!!
+            if(taskItem!!.dueTime() != null){
+                dueTime = taskItem!!.dueTime()!!
                 updateTimeButtonText()
             }
         }
@@ -38,6 +39,8 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
         {
             binding.taskTitle.text = "New Task"
         }
+
+
 
         taskViewModel = ViewModelProvider(activity).get(TaskViewModel::class.java)
         binding.saveButton.setOnClickListener{
@@ -69,6 +72,8 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
         dialog.show()
     }
 
+
+
     private fun updateTimeButtonText() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             binding.timePickerButton.text = String.format("%02d:%02d",dueTime!!.hour,dueTime!!.minute)
@@ -79,22 +84,29 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentNewTaskSheetBinding.inflate(inflater,container,false)
+
         return binding.root
+
+
     }
 
     private fun saveAction()
     {
         val name = binding.name.text.toString()
         val desc = binding.desc.text.toString()
+        val dueTimeString = if(dueTime == null) null else TaskItem.timeFormatter.format(dueTime)
 
         if(taskItem == null)
         {
-            val newTask= TaskItem(name,desc,dueTime,null)
+            val newTask= TaskItem(name,desc,dueTimeString,null)
             taskViewModel.addTaskItem(newTask)
         }
         else
         {
-            taskViewModel.updateTaskItem(taskItem!!.id, name, desc, dueTime)
+            taskItem!!.name = name
+            taskItem!!.desc = desc
+            taskItem!!.dueTimeString =dueTimeString
+            taskViewModel.updateTaskItem(taskItem!!)
         }
 
         binding.name.setText("")
