@@ -16,6 +16,8 @@ class TaskItemViewHolder(
 {
     @RequiresApi(Build.VERSION_CODES.O)
     private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy:MM:dd")
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun bindTaskItem(taskItem: TaskItem)
@@ -37,9 +39,10 @@ class TaskItemViewHolder(
             clickListener.editTaskItem(taskItem)
         }
 
-        if(taskItem.dueTime() != null)
-            binding.dueTime.text = timeFormat.format(taskItem.dueTime())
-        else
-            binding.dueTime.text = ""
+        if(taskItem.dueTime() != null){
+            binding.dueTime.text = timeFormat.format(taskItem.dueTime())}
+        //if(taskItem.completedDate() != null){
+        //    binding.dueDate.text = dateFormat.format((taskItem.completedDate()))
+        //}
     }
 }

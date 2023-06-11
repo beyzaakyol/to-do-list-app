@@ -1,6 +1,7 @@
 package com.beyzaakyol.todolist
 
 
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Build
 import android.os.Bundle
@@ -8,16 +9,21 @@ import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.lifecycle.ViewModelProvider
 import com.beyzaakyol.todolist.databinding.FragmentNewTaskSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.time.LocalDate
 import java.time.LocalTime
+import java.util.*
 
 class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
 {
     private lateinit var binding: FragmentNewTaskSheetBinding
     private lateinit var taskViewModel: TaskViewModel
+    private lateinit var datePickerButton: Button
     private var dueTime: LocalTime? = null
+    private var dueDate: LocalDate? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,11 +40,21 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
                 dueTime = taskItem!!.dueTime()!!
                 updateTimeButtonText()
             }
+            if (taskItem!!.completedDate() != null){
+                dueDate = taskItem!!.completedDate()!!
+                updateDateButtonText()
+            }
         }
         else
         {
             binding.taskTitle.text = "New Task"
         }
+
+        datePickerButton = binding.datePickerButton
+        datePickerButton.setOnClickListener {
+            showDatePickerDialog()
+        }
+
 
 
 
@@ -50,6 +66,42 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
             openTimePicker()
         }
     }
+
+
+
+
+
+
+
+    private fun showDatePickerDialog() {
+        var selectedDate: String? = null
+
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                dueDate = LocalDate.of(year, month + 1, dayOfMonth)
+                val formattedDate = "${dueDate?.dayOfMonth}.${dueDate?.monthValue}.${dueDate?.year}"
+                datePickerButton.text = formattedDate
+            },
+            year,
+            month,
+            dayOfMonth
+        )
+
+        datePickerDialog.show()
+    }
+
+
+
+
+
+
+
 
 
     private fun openTimePicker() {
@@ -81,6 +133,11 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
     }
 
 
+    private fun updateDateButtonText() {
+        val formattedDate = "${dueDate?.dayOfMonth}.${dueDate?.monthValue}.${dueDate?.year}"
+        binding.datePickerButton.text = formattedDate
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentNewTaskSheetBinding.inflate(inflater,container,false)
@@ -95,10 +152,10 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
         val name = binding.name.text.toString()
         val desc = binding.desc.text.toString()
         val dueTimeString = if(dueTime == null) null else TaskItem.timeFormatter.format(dueTime)
-
+        val completedDateString = if(dueDate == null) null else TaskItem.dateFormatter.format(dueDate)
         if(taskItem == null)
         {
-            val newTask= TaskItem(name,desc,dueTimeString,null)
+            val newTask= TaskItem(name,desc,dueTimeString, null)
             taskViewModel.addTaskItem(newTask)
         }
         else
@@ -106,6 +163,7 @@ class NewTaskSheet(var taskItem: TaskItem?) : BottomSheetDialogFragment()
             taskItem!!.name = name
             taskItem!!.desc = desc
             taskItem!!.dueTimeString =dueTimeString
+            taskItem!!.completedDateString = null
             taskViewModel.updateTaskItem(taskItem!!)
         }
 

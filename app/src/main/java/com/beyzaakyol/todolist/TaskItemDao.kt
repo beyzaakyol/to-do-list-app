@@ -12,6 +12,7 @@ interface TaskItemDao
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTaskItem(taskItem: TaskItem)
 
+
     @Update
     suspend fun updateTaskItem(taskItem: TaskItem)
 
